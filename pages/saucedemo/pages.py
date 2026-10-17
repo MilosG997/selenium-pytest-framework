@@ -1,4 +1,5 @@
 """Page objects for SauceDemo (https://www.saucedemo.com), a public demo shop made for test practice."""
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
@@ -128,10 +129,18 @@ class CartPage(Header):
     CONTINUE = data_test("continue-shopping")
 
     def names(self):
+        # React re-renders the list after a change; read again if an element went stale mid-read
+        for _ in range(3):
+            try:
+                return [e.text for e in self.find_all(self.ITEM_NAME)]
+            except StaleElementReferenceException:
+                continue
         return [e.text for e in self.find_all(self.ITEM_NAME)]
 
     def remove(self, product_name):
-        self.click(data_test(f"remove-{slug(product_name)}"))
+        button = data_test(f"remove-{slug(product_name)}")
+        self.click(button)
+        self.wait.until(EC.invisibility_of_element_located(button))
 
     def checkout(self):
         self.click(self.CHECKOUT)

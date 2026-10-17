@@ -13,7 +13,12 @@ def _options(name, headed):
                "firefox": webdriver.FirefoxOptions}[name]()
     if not headed:
         options.add_argument("--headless=new" if name != "firefox" else "-headless")
-    if name != "firefox":
+    if name == "firefox":
+        # Firefox has no DevTools URL blocking: use its built-in strict tracking/ad protection instead
+        options.set_preference("browser.contentblocking.category", "strict")
+        options.set_preference("privacy.trackingprotection.enabled", True)
+        options.set_preference("privacy.trackingprotection.socialtracking.enabled", True)
+    else:
         options.add_argument("--window-size=1366,900")
         # SauceDemo uses a known-breached demo password; keep Chrome's password popups out of the way
         options.add_experimental_option("prefs", {"credentials_enable_service": False,

@@ -13,7 +13,7 @@ def test_register_through_the_ui_then_delete(driver, user):
         home = signup.continue_()
         assert home.logged_in_as() == user["name"]
         home.click(home.DELETE_ACCOUNT)
-        assert SignupPage(driver).text(SignupPage.DELETED) == "ACCOUNT DELETED!"
+        assert SignupPage(driver).text(SignupPage.DELETED).upper() == "ACCOUNT DELETED!"
     finally:
         AEClient().delete_account(user["email"], user["password"])  # no leftovers if a step failed
 

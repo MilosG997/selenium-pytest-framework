@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-from pages.base_page import BasePage
+from pages.base_page import BasePage, norm
 
 BASE = "https://automationexercise.com"
 
@@ -51,9 +51,23 @@ class AEPage(BasePage):
             self.wait.until(EC.element_to_be_clickable(locator)).click()
         except Exception:
             self.driver.execute_script("arguments[0].click()", el)
+        self._skip_vignette(el)
+
+    def _skip_vignette(self, el):
+        """A full-screen ad ('#google_vignette') can swallow a click on a link: remove it and click again."""
+        try:
+            if "#google_vignette" not in self.driver.current_url:
+                return
+        except Exception:  # e.g. a JS alert is open right after the click: no ad to handle
+            return
+        self.hide_ads()
+        try:
+            self.driver.execute_script("arguments[0].click()", el)
+        except Exception:
+            pass  # the click already navigated away
 
     def logged_in_as(self):
-        return self.text(self.LOGGED_IN_AS).replace("Logged in as", "").strip()
+        return norm(self.text(self.LOGGED_IN_AS).replace("Logged in as", ""))
 
     def subscribe(self, email):
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
@@ -104,7 +118,7 @@ class SignupPage(AEPage):
             self.type(qa(field), user[field])
         Select(self.find(qa("country"))).select_by_visible_text(user["country"])
         self.click(self.CREATE)
-        return self.text(self.CREATED)
+        return norm(self.text(self.CREATED)).upper()
 
     def continue_(self):
         self.click(self.CONTINUE)
@@ -124,13 +138,13 @@ class ProductsPage(AEPage):
     VIEW_CART = (By.CSS_SELECTOR, "#cartModal a[href='/view_cart']")
 
     def names(self):
-        return [e.text for e in self.find_all(self.CARD_NAME)]
+        return [norm(e.text) for e in self.find_all(self.CARD_NAME)]
 
     def prices(self):
         return [price(e.text) for e in self.find_all(self.CARD_PRICE)]
 
     def title(self):
-        return self.text(self.TITLE)
+        return norm(self.text(self.TITLE)).upper()  # the site uppercases with CSS
 
     def search(self, term):
         self.type(self.SEARCH, term)
@@ -171,7 +185,7 @@ class ProductDetailPage(AEPage):
     def info(self):
         """{'Category': 'Women > Tops', 'Availability': 'In Stock', 'Condition': 'New', 'Brand': 'Polo'}"""
         lines = [p.text for p in self.find(self.INFO).find_elements(By.TAG_NAME, "p")]
-        return dict(line.split(":", 1) for line in lines if ":" in line) | {"name": self.text(self.NAME)}
+        return dict(line.split(":", 1) for line in lines if ":" in line) | {"name": norm(self.text(self.NAME))}
 
     def price(self):
         return price(self.text(self.PRICE))
@@ -188,7 +202,7 @@ class ProductDetailPage(AEPage):
         self.type(self.REVIEW_EMAIL, email)
         self.type(self.REVIEW_TEXT, text)
         self.click(self.REVIEW_SEND)
-        return self.wait.until(EC.visibility_of_element_located(self.REVIEW_OK)).text
+        return norm(self.wait.until(EC.visibility_of_element_located(self.REVIEW_OK)).text)
 
 
 class CartPage(AEPage):
@@ -202,7 +216,7 @@ class CartPage(AEPage):
         for r in self.find_all(self.ROW):
             out.append({
                 "id": r.get_attribute("id").replace("product-", ""),
-                "name": r.find_element(By.CSS_SELECTOR, ".cart_description h4 a").text,
+                "name": norm(r.find_element(By.CSS_SELECTOR, ".cart_description h4 a").text),
                 "price": price(r.find_element(By.CSS_SELECTOR, ".cart_price p").text),
                 "quantity": int(r.find_element(By.CSS_SELECTOR, ".cart_quantity button").text),
                 "total": price(r.find_element(By.CSS_SELECTOR, ".cart_total_price").text),
@@ -225,6 +239,9 @@ class ContactPage(AEPage):
         for field, value in (("name", name), ("email", email), ("subject", subject), ("message", message)):
             self.type(qa(field), value)
         self.driver.find_element(By.NAME, "upload_file").send_keys(str(file_path))
-        self.click(qa("submit-button"))
+        # Plain click here: any other WebDriver call while the confirm dialog is open would auto-dismiss it
+        submit = self.find(qa("submit-button"))
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'})", submit)
+        submit.click()
         self.wait.until(EC.alert_is_present()).accept()  # "Press OK to proceed!"
         return self.text(self.SUCCESS)

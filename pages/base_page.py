@@ -4,6 +4,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 
+def norm(text):
+    """Collapse whitespace. Firefox returns raw DOM text (double spaces, no CSS uppercase), Chrome the rendered one."""
+    return " ".join(text.split())
+
+
 def data_test(value):
     """Locator for elements with a data-test attribute (SauceDemo uses them everywhere)."""
     return By.CSS_SELECTOR, f'[data-test="{value}"]'
