@@ -2,7 +2,6 @@
 import pytest
 
 from api.automationexercise import AEClient
-from pages.base_page import norm
 from pages.automationexercise.pages import CartPage, HomePage, ProductsPage
 
 
@@ -15,7 +14,7 @@ def products(driver):
 def test_catalog_matches_the_api(products):
     """The products page and the products API must list the same items."""
     _, body = AEClient().products()
-    assert sorted(products.names()) == sorted(norm(p["name"]) for p in body["products"])
+    assert sorted(products.ids()) == sorted(p["id"] for p in body["products"])
 
 
 @pytest.mark.regression
@@ -23,10 +22,10 @@ def test_catalog_matches_the_api(products):
 def test_search_only_returns_matching_products(products, term):
     products.search(term)
     assert products.title() == "SEARCHED PRODUCTS"
-    names = products.names()
-    assert names, f"no results for {term}"
+    ids = products.ids()
+    assert ids, f"no results for {term}"
     _, body = AEClient().search(term)
-    assert sorted(names) == sorted(norm(p["name"]) for p in body["products"]), "UI and API search must agree"
+    assert sorted(ids) == sorted(p["id"] for p in body["products"]), "UI and API search must agree"
 
 
 @pytest.mark.regression
@@ -48,8 +47,8 @@ def test_category_page_title(products, top, sub):
 def test_brand_page_lists_only_that_brand(products, brand):
     products.open_brand(brand)
     assert products.title() == f"BRAND - {brand.upper()} PRODUCTS"
-    expected = {norm(p["name"]) for p in AEClient().products()[1]["products"] if p["brand"] == brand}
-    assert set(products.names()) == expected
+    expected = {p["id"] for p in AEClient().products()[1]["products"] if p["brand"] == brand}
+    assert set(products.ids()) == expected
 
 
 @pytest.mark.regression

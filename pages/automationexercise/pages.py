@@ -143,6 +143,11 @@ class ProductsPage(AEPage):
             "return [...document.querySelectorAll('.features_items .productinfo p')].map(p =>"
             " [...p.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(''))")]
 
+    def ids(self):
+        """Product ids of the visible cards: stable keys for UI-vs-API comparisons (text can differ per browser)."""
+        return [int(e.get_attribute("data-product-id"))
+                for e in self.find_all((By.CSS_SELECTOR, ".features_items .productinfo a.add-to-cart"))]
+
     def prices(self):
         return [price(e.text) for e in self.find_all(self.CARD_PRICE)]
 
