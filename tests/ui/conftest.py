@@ -4,6 +4,9 @@ import base64
 import pytest
 from selenium import webdriver
 
+AD_HOSTS = ["*googlesyndication.com*", "*doubleclick.net*", "*adservice.google.*", "*googleads*",
+            "*fundingchoicesmessages*", "*google-analytics.com*", "*googletagmanager.com*"]
+
 
 def _options(name, headed):
     options = {"chrome": webdriver.ChromeOptions, "edge": webdriver.EdgeOptions,
@@ -27,6 +30,10 @@ def driver(request):
     d = factory(options=_options(name, headed))
     if name == "firefox":
         d.set_window_size(1366, 900)
+    else:
+        # Block ad networks (Automation Exercise is full of ads that cover buttons and slow pages down)
+        d.execute_cdp_cmd("Network.enable", {})
+        d.execute_cdp_cmd("Network.setBlockedURLs", {"urls": AD_HOSTS})
     d.set_page_load_timeout(45)
     yield d
     d.quit()
