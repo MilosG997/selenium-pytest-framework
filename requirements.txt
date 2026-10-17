@@ -1,0 +1,6 @@
+selenium>=4.20
+pytest>=8.0
+pytest-html>=4.1
+pytest-xdist>=3.5
+requests>=2.31
+jsonschema>=4.21

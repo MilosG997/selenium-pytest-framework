@@ -1,0 +1,24 @@
+{
+  "users_that_can_log_in": ["standard_user", "problem_user", "performance_glitch_user", "error_user", "visual_user"],
+  "login_errors": [
+    {"id": "locked_out", "username": "locked_out_user", "password": "secret_sauce",
+     "error": "Epic sadface: Sorry, this user has been locked out."},
+    {"id": "wrong_password", "username": "standard_user", "password": "wrong_password",
+     "error": "Epic sadface: Username and password do not match any user in this service"},
+    {"id": "unknown_user", "username": "no_such_user", "password": "secret_sauce",
+     "error": "Epic sadface: Username and password do not match any user in this service"},
+    {"id": "empty_username", "username": "", "password": "secret_sauce",
+     "error": "Epic sadface: Username is required"},
+    {"id": "empty_password", "username": "standard_user", "password": "",
+     "error": "Epic sadface: Password is required"}
+  ],
+  "checkout_errors": [
+    {"id": "no_first_name", "first": "", "last": "Petrovic", "zip": "11000", "error": "Error: First Name is required"},
+    {"id": "no_last_name", "first": "Ana", "last": "", "zip": "11000", "error": "Error: Last Name is required"},
+    {"id": "no_postal_code", "first": "Ana", "last": "Petrovic", "zip": "", "error": "Error: Postal Code is required"}
+  ],
+  "customer": {"first": "Ana", "last": "Petrovic", "zip": "11000"},
+  "products": ["Sauce Labs Backpack", "Sauce Labs Bike Light", "Sauce Labs Bolt T-Shirt",
+               "Sauce Labs Fleece Jacket", "Sauce Labs Onesie", "Test.allTheThings() T-Shirt (Red)"],
+  "tax_rate": 0.08
+}
