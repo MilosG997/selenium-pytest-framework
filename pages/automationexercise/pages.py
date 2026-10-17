@@ -138,7 +138,10 @@ class ProductsPage(AEPage):
     VIEW_CART = (By.CSS_SELECTOR, "#cartModal a[href='/view_cart']")
 
     def names(self):
-        return [norm(e.text) for e in self.find_all(self.CARD_NAME)]
+        # only the element's own text nodes: ad scripts sometimes inject extra nodes into these paragraphs
+        return [norm(t) for t in self.driver.execute_script(
+            "return [...document.querySelectorAll('.features_items .productinfo p')].map(p =>"
+            " [...p.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(''))")]
 
     def prices(self):
         return [price(e.text) for e in self.find_all(self.CARD_PRICE)]
