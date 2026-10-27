@@ -22,7 +22,9 @@ def test_cart_badge_survives_a_page_reload(shop, driver):
 
 def test_cart_contents_survive_logout_and_login(shop, driver):
     shop.add("Sauce Labs Bike Light")
-    inventory = shop.logout().login("standard_user")
+    login = shop.logout()
+    assert login.is_open(), "the sidebar slides in: make sure logout really landed on the login page"
+    inventory = login.login("standard_user")
     assert inventory.is_open(), "wait for the catalog before opening the cart (flaky under parallel load)"
     assert inventory.cart_count() == 1
     cart = inventory.open_cart()

@@ -60,7 +60,7 @@ class LoginPage(BasePage):
         return self.text(self.ERROR)
 
     def is_open(self):
-        return self.is_visible(self.SUBMIT)
+        return self.is_visible(self.SUBMIT, timeout=10)
 
 
 class InventoryPage(Header):
