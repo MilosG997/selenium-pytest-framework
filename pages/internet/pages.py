@@ -229,3 +229,171 @@ class BrokenImagesPage(BasePage):
         return self.driver.execute_script(
             "return [...document.querySelectorAll('.example img')]"
             ".filter(i => !i.complete || i.naturalWidth === 0).map(i => i.getAttribute('src'))")
+
+
+class ShadowDomPage(BasePage):
+    URL = BASE + "/shadowdom"
+    HOSTS = (By.TAG_NAME, "my-paragraph")
+
+    def slotted_texts(self):
+        return [h.text for h in self.find_all(self.HOSTS)]
+
+    def slot_name(self):
+        """The <slot> lives inside the shadow root, so it is only reachable through element.shadow_root."""
+        root = self.find(self.HOSTS).shadow_root
+        return root.find_element(By.CSS_SELECTOR, "slot").get_attribute("name")
+
+
+class InfiniteScrollPage(BasePage):
+    URL = BASE + "/infinite_scroll"
+    BLOCKS = (By.CSS_SELECTOR, ".jscroll-added")
+
+    def count(self):
+        return len(self.find_all(self.BLOCKS))
+
+    def scroll_until(self, at_least, timeout=20):
+        def more(d):
+            d.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+            return self.count() >= at_least
+        WebDriverWait(self.driver, timeout, poll_frequency=0.7).until(more)
+        return self.count()
+
+
+class FloatingMenuPage(BasePage):
+    URL = BASE + "/floating_menu"
+    MENU = (By.ID, "menu")
+
+    def scroll_to_bottom(self):
+        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+
+    def menu_top(self):
+        return self.driver.execute_script("return arguments[0].getBoundingClientRect().top", self.find(self.MENU))
+
+
+class SliderPage(BasePage):
+    URL = BASE + "/horizontal_slider"
+    SLIDER = (By.CSS_SELECTOR, "input[type=range]")
+    VALUE = (By.ID, "range")
+
+    def press(self, key, times):
+        self.find(self.SLIDER).send_keys(key * times)
+        return self.text(self.VALUE)
+
+
+class NumberInputPage(BasePage):
+    URL = BASE + "/inputs"
+    INPUT = (By.CSS_SELECTOR, "input[type=number]")
+
+    def press(self, key, times):
+        field = self.find(self.INPUT)
+        field.send_keys(key * times)
+        return field.get_attribute("value")
+
+
+class ChallengingDomPage(BasePage):
+    """Ids change on every load, so the test locates by table structure and visible text only."""
+    URL = BASE + "/challenging_dom"
+
+    def headers(self):
+        return [th.text for th in self.find_all((By.CSS_SELECTOR, "table thead th"))]
+
+    def rows(self):
+        return [[td.text for td in tr.find_elements(By.TAG_NAME, "td")]
+                for tr in self.find_all((By.CSS_SELECTOR, "table tbody tr"))]
+
+
+class LargeDomPage(BasePage):
+    URL = BASE + "/large"
+
+    def sibling(self, row, column):
+        """The deep 'siblings' block: element N.M contains all later siblings, so read only its own text."""
+        el = self.find((By.ID, f"sibling-{row}.{column}"))
+        return self.driver.execute_script("return arguments[0].firstChild.textContent.trim()", el)
+
+    def table_cell(self, row, column):
+        return self.text((By.CSS_SELECTOR, f"#large-table tbody tr:nth-child({row}) td:nth-child({column})"))
+
+    def table_size(self):
+        rows = self.find_all((By.CSS_SELECTOR, "#large-table tbody tr"))
+        return len(rows), len(self.find_all((By.CSS_SELECTOR, "#large-table thead th")))
+
+
+class TinyMcePage(BasePage):
+    URL = BASE + "/iframe"
+    FRAME = (By.ID, "mce_0_ifr")
+
+    def editor_text(self):
+        self.wait.until(EC.frame_to_be_available_and_switch_to_it(self.FRAME))
+        text = self.find((By.ID, "tinymce")).text
+        self.driver.switch_to.default_content()
+        return text
+
+
+class EntryAdPage(BasePage):
+    URL = BASE + "/entry_ad"
+    MODAL = (By.ID, "modal")
+    CLOSE = (By.CSS_SELECTOR, "#modal .modal-footer p")
+
+    def close_ad(self):
+        self.click(self.CLOSE)
+        self.wait.until(EC.invisibility_of_element_located(self.MODAL))
+
+
+class GeolocationPage(BasePage):
+    URL = BASE + "/geolocation"
+
+    def where_am_i(self):
+        self.click((By.XPATH, "//button[text()='Where am I?']"))
+        return float(self.text((By.ID, "lat-value"))), float(self.text((By.ID, "long-value")))
+
+
+class DynamicContentPage(BasePage):
+    URL = BASE + "/dynamic_content?with_content=static"
+    # the rows sit inside an outer .large-10 column too: take only the innermost ones
+    TEXTS = (By.XPATH, "//div[@id='content']//div[contains(@class,'large-10')][not(.//div[contains(@class,'large-10')])]")
+
+    def texts(self):
+        return [e.text for e in self.find_all(self.TEXTS)]
+
+
+class StatusCodesPage(BasePage):
+    URL = BASE + "/status_codes"
+
+    def code_links(self):
+        return [a.get_attribute("href") for a in self.find_all((By.CSS_SELECTOR, "#content li a"))]
+
+
+class RedirectorPage(BasePage):
+    URL = BASE + "/redirector"
+
+    def follow(self):
+        self.click((By.ID, "redirect"))
+        self.wait_for_url("/status_codes")
+        return self.driver.current_url
+
+
+class DownloadPage(BasePage):
+    URL = BASE + "/download"
+
+    def file_links(self):
+        return [a.get_attribute("href") for a in self.find_all((By.CSS_SELECTOR, "#content .example a"))]
+
+
+class AbTestPage(BasePage):
+    URL = BASE + "/abtest"
+
+    def heading(self):
+        return self.text((By.TAG_NAME, "h3"))
+
+
+class ForgotPasswordPage(BasePage):
+    URL = BASE + "/forgot_password"
+
+    def submit(self, email):
+        self.type((By.ID, "email"), email)
+        self.click((By.ID, "form_submit"))
+        return self.text((By.TAG_NAME, "body"))
+
+
+class JsErrorPage(BasePage):
+    URL = BASE + "/javascript_error"
