@@ -171,10 +171,15 @@ class ProductsPage(AEPage):
         """top: Women/Men/Kids, sub: e.g. Dress, Tops, Jeans"""
         self.click((By.CSS_SELECTOR, f"a[href='#{top}']"))
         self.click((By.XPATH, f"//div[@id='{top}']//a[normalize-space()='{sub}']"))
+        self.wait_for_url("/category_products/")
+        self.wait.until(lambda d: self.title().startswith(f"{top.upper()} - "))
         return self
 
     def open_brand(self, brand):
         self.click((By.CSS_SELECTOR, f".brands-name a[href='/brand_products/{brand}']"))
+        # Firefox can still show the old page's title right after the click: wait for the brand page itself
+        self.wait_for_url("/brand_products/")
+        self.wait.until(lambda d: self.title().startswith("BRAND"))
         return self
 
     def open_product(self, product_id):

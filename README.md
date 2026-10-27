@@ -9,11 +9,11 @@ A UI and API test framework written from scratch in Python: **Selenium WebDriver
 | [`tests/ui/saucedemo`](tests/ui/saucedemo) | [SauceDemo](https://www.saucedemo.com) shop | 53 | Login rules, sorting, cart, checkout validation, order totals and tax, full purchase, state after reload and re-login, menu and footer links, protected pages, slow user, known bugs |
 | [`tests/ui/internet`](tests/ui/internet) | [The Internet](https://the-internet.herokuapp.com) | 55 | Explicit waits, JS alerts, iframes and an editor inside one, new windows, shadow DOM, infinite scroll, sliders, modals, unstable ids, a 2,500-cell table, geolocation emulation, console errors, drag-and-drop, upload, keyboard |
 | [`tests/ui/automationexercise`](tests/ui/automationexercise) | [Automation Exercise](https://automationexercise.com) shop | 28 | Register and delete account, login/logout, search, categories, brands, quantities, cart, reviews, contact form with file upload, UI checked against the API |
-| [`tests/api`](tests/api) | [Restful-Booker](https://restful-booker.herokuapp.com) | 12 | Token auth, create/read/update/patch/delete, JSON Schema validation, 403/404 negative cases, cleanup |
+| [`tests/api`](tests/api) | [Restful-Booker](https://restful-booker.herokuapp.com) | 22 | Token auth, create/read/update/patch/delete, JSON Schema validation, filters, malformed JSON, 403/404 negative cases, cleanup |
 | [`tests/api`](tests/api) | [Automation Exercise API](https://automationexercise.com/api_list) | 14 | Catalog schema, search, error responses, full account lifecycle (create, verify, read, update, delete) |
 | [`tests/api`](tests/api) | [The Internet](https://the-internet.herokuapp.com) over HTTP | 9 | Basic and Digest auth, wrong password, status codes, 302 redirect, file download |
 
-**171 tests**, about 5 minutes in parallel. 6 of them document real defects in the demo apps (see *Known bugs* below).
+**181 tests**, about 5 minutes in parallel. 7 of them document real defects in the demo apps (see *Known bugs* below).
 
 ## Run it
 
@@ -59,6 +59,7 @@ tests/
   - SauceDemo `visual_user`: the catalog shows different prices than for `standard_user`
   - The Internet: two broken images
   - Automation Exercise API: always answers HTTP 200, the real status is hidden in the JSON body
+  - Restful-Booker: a booking with missing fields crashes the server (500) instead of returning 400
 - **Test data that cleans up after itself**: accounts use generated `@example.com` identities and are deleted in a `finally`/fixture teardown, also when a step fails.
 - **UI vs API cross-checks**: catalog, search and brand pages are compared with what the API returns.
 - **Browser features through DevTools**: geolocation is emulated and permissions granted with CDP commands; the shadow DOM is reached with `element.shadow_root`; JS errors are read from the browser log.
