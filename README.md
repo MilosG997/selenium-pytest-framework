@@ -66,7 +66,7 @@ tests/
 - **Ad blocking**: Chrome/Edge block ad networks through the DevTools protocol, so ads never cover buttons.
 - **Cross-browser**: Chrome, Edge and Firefox through one option; drivers come from Selenium Manager.
 - **Live demo apps are flaky by nature**: on CI a failed test is retried twice (`pytest-rerunfailures`) before it counts, and every real failure is shown as a GitHub annotation on the run page.
-- **CI**: GitHub Actions runs the UI suite on Chrome and Firefox in parallel plus the API suite, on every push and every Monday, and uploads the HTML reports as artifacts.
+- **CI**: GitHub Actions runs the UI suite on Chrome and Firefox in parallel plus the API suite on every push and pull request (pinned Ubuntu 24.04 runner), and uploads the HTML reports as artifacts. *Run workflow* in the Actions tab starts it by hand.
 
 ## Real-world use
 
