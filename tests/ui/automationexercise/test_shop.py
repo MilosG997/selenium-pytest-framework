@@ -4,6 +4,9 @@ import pytest
 from api.automationexercise import AEClient
 from pages.automationexercise.pages import CartPage, HomePage, ProductsPage
 
+# One worker for this shop: four parallel browsers hitting it at once is what triggers its bot protection
+pytestmark = [pytest.mark.xdist_group("automationexercise")]
+
 
 @pytest.fixture
 def products(driver):

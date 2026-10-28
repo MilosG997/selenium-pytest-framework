@@ -4,6 +4,9 @@ import pytest
 from api.automationexercise import AEClient
 from pages.automationexercise.pages import ContactPage, LoginSignupPage, SignupPage
 
+# One worker for this shop: four parallel browsers hitting it at once is what triggers its bot protection
+pytestmark = [pytest.mark.xdist_group("automationexercise")]
+
 
 @pytest.mark.smoke
 def test_register_through_the_ui_then_delete(driver, user):

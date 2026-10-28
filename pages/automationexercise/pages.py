@@ -1,4 +1,5 @@
 """Page objects for Automation Exercise (https://automationexercise.com), a full demo shop made for test practice."""
+import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
@@ -28,12 +29,22 @@ class AEPage(BasePage):
     SCROLL_UP = (By.ID, "scrollUp")
     HERO_TEXT = (By.CSS_SELECTOR, "#slider-carousel .item.active h2")
 
+    BOT_CHECK = ("just a moment", "attention required", "access denied")
+
     def go(self, path):
         self.driver.get(BASE + path)
         if "#google_vignette" in self.driver.current_url:  # full-screen ad interstitial
             self.driver.get(BASE + path)
+        self._skip_if_bot_check()
         self.hide_ads()
         return self
+
+    def _skip_if_bot_check(self):
+        """The site sits behind Cloudflare, which sometimes shows a bot check to cloud CI machines. That is the
+        site protecting itself, not a defect: skip with the reason instead of failing (and never try to get past it)."""
+        title = self.driver.title.lower()
+        if any(t in title for t in self.BOT_CHECK) or "challenge-platform" in self.driver.page_source[:20000]:
+            pytest.skip(f"automationexercise.com showed a bot check to this machine ({self.driver.title!r})")
 
     def open(self):
         return self.go(self.URL)

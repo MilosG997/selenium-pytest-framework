@@ -28,7 +28,9 @@ def pytest_terminal_summary(terminalreporter, exitstatus):
         for report in terminalreporter.stats.get(kind, []):
             lines = str(getattr(report, "longrepr", "") or kind).strip().splitlines()
             where = f'{getattr(report, "when", "collect")}: {getattr(report, "nodeid", "") or "collection"}'
-            terminalreporter.write_line(f"::error title={kind} in {where}::{lines[-1][:300] if lines else kind}")
+            page = dict(getattr(report, "user_properties", [])).get("page", "")
+            message = (lines[-1][:250] if lines else kind) + (f" | page: {page[:150]}" if page else "")
+            terminalreporter.write_line(f"::error title={kind} in {where}::{message}")
             shown += 1
     if exitstatus and not shown:
         terminalreporter.write_line(f"::error title=pytest exit status {int(exitstatus)}::no test failed, see the log")

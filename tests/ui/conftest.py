@@ -54,6 +54,11 @@ def pytest_runtest_makereport(item, call):
     if report.when != "call" or not report.failed:
         return
     d = item.funcargs.get("driver")
+    if d is not None:  # what the browser showed, for the CI annotation (user_properties survive pytest-xdist)
+        try:
+            report.user_properties.append(("page", f"{d.title!r} at {d.current_url}"))
+        except Exception:
+            pass
     html = item.config.pluginmanager.getplugin("html")
     if d is None or html is None:
         return

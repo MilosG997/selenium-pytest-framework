@@ -24,7 +24,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Run UI tests in parallel
         run: >
-          pytest tests/ui -n 4 --browser ${{ matrix.browser }} --reruns 2 --reruns-delay 5
+          pytest tests/ui -n 4 --dist loadgroup --browser ${{ matrix.browser }} --reruns 2 --reruns-delay 5
           ${{ matrix.browser == 'firefox' && '--ignore=tests/ui/automationexercise' || '' }}
           --html=reports/ui-${{ matrix.browser }}.html --self-contained-html
       - uses: actions/upload-artifact@v6

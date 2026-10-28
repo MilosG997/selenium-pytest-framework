@@ -63,6 +63,7 @@ tests/
 - **Test data that cleans up after itself**: accounts use generated `@example.com` identities and are deleted in a `finally`/fixture teardown, also when a step fails.
 - **UI vs API cross-checks**: catalog, search and brand pages are compared with what the API returns.
 - **Browser features through DevTools**: geolocation is emulated and permissions granted with CDP commands; the shadow DOM is reached with `element.shadow_root`; JS errors are read from the browser log.
+- **Polite to public demo sites**: Automation Exercise runs on a single worker (`xdist_group` + `--dist loadgroup`) instead of four browsers at once; if its Cloudflare protection still shows a bot check to the CI machine, those tests are skipped with the reason, never forced through.
 - **Ad blocking**: Chrome/Edge block ad networks through the DevTools protocol, so ads never cover buttons.
 - **Cross-browser**: Chrome, Edge and Firefox through one option; drivers come from Selenium Manager. On CI, Chrome runs every suite and Firefox runs SauceDemo and The Internet (Automation Exercise is full of ads that only Chrome can block through DevTools).
 - **Live demo apps are flaky by nature**: on CI a failed test is retried twice (`pytest-rerunfailures`) before it counts, and every real failure is shown as a GitHub annotation on the run page.
