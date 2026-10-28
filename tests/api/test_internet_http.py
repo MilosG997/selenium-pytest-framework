@@ -1,4 +1,6 @@
 """HTTP-level checks on The Internet: auth schemes, status codes, redirects and downloads (requests, no browser)."""
+import re
+
 import pytest
 import requests
 from requests.auth import HTTPDigestAuth
@@ -32,6 +34,9 @@ def test_redirect_is_a_302_to_status_codes():
 
 
 def test_downloadable_file_is_served():
-    response = requests.get(BASE + "/download/11.txt", timeout=20)
+    """The file list changes all the time (anyone can upload), so take a name from the page itself."""
+    page = requests.get(BASE + "/download", timeout=20).text
+    name = re.search(r'href="download/([^"]+)"', page).group(1)
+    response = requests.get(f"{BASE}/download/{name}", timeout=20)
     assert response.status_code == 200
     assert "attachment" in response.headers.get("Content-Disposition", "") or response.headers.get("Content-Type")

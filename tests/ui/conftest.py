@@ -1,6 +1,5 @@
 """Browser fixtures for UI tests: one clean browser per test, screenshot in the HTML report on failure."""
 import base64
-import os
 
 import pytest
 from selenium import webdriver
@@ -61,17 +60,3 @@ def pytest_runtest_makereport(item, call):
     extras.append(html.extras.url(d.current_url, name="page at failure"))
     report.extras = extras
 
-
-_terminal = None
-
-
-def pytest_configure(config):
-    global _terminal
-    _terminal = config.pluginmanager.get_plugin("terminalreporter")
-
-
-def pytest_runtest_logreport(report):
-    """On GitHub Actions, show every failure as an annotation on the run page (no need to open the log)."""
-    if os.environ.get("GITHUB_ACTIONS") and _terminal and report.failed and report.when in ("setup", "call"):
-        message = str(report.longrepr).strip().splitlines()[-1][:300]
-        _terminal.write_line(f"::error title={report.nodeid}::{message}")

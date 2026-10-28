@@ -392,6 +392,8 @@ class ForgotPasswordPage(BasePage):
     def submit(self, email):
         self.type((By.ID, "email"), email)
         self.click((By.ID, "form_submit"))
+        # the form posts and a new page loads: wait for it instead of reading the old body mid-navigation
+        self.wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "body"), "e-mail"))
         return self.text((By.TAG_NAME, "body"))
 
 
