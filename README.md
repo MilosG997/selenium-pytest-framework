@@ -50,7 +50,7 @@ tests/
 ```
 
 - **Page Object Model**: tests read like steps (`shop.add("Sauce Labs Backpack")`, `cart.checkout().fill(...)`), locators live in one place.
-- **No `sleep()`**: every wait is a `WebDriverWait` on a real condition.
+- **No `sleep()`**: every wait is a `WebDriverWait` on a real condition, and every navigation in a page object waits for the next page before returning it (no reading a page that is still loading).
 - **Data-driven**: login and checkout error cases come from [`data/saucedemo.json`](data/saucedemo.json) through `pytest.mark.parametrize`.
 - **Markers**: `smoke`, `regression`, `api`, `known_bug`.
 - **Known bugs are tests too**: tests for real defects are marked `xfail(strict=True)`, so the suite stays green while the bug exists and turns red the day it is fixed:
@@ -64,7 +64,7 @@ tests/
 - **UI vs API cross-checks**: catalog, search and brand pages are compared with what the API returns.
 - **Browser features through DevTools**: geolocation is emulated and permissions granted with CDP commands; the shadow DOM is reached with `element.shadow_root`; JS errors are read from the browser log.
 - **Ad blocking**: Chrome/Edge block ad networks through the DevTools protocol, so ads never cover buttons.
-- **Cross-browser**: Chrome, Edge and Firefox through one option; drivers come from Selenium Manager.
+- **Cross-browser**: Chrome, Edge and Firefox through one option; drivers come from Selenium Manager. On CI, Chrome runs every suite and Firefox runs SauceDemo and The Internet (Automation Exercise is full of ads that only Chrome can block through DevTools).
 - **Live demo apps are flaky by nature**: on CI a failed test is retried twice (`pytest-rerunfailures`) before it counts, and every real failure is shown as a GitHub annotation on the run page.
 - **CI**: GitHub Actions runs the UI suite on Chrome and Firefox in parallel plus the API suite on every push and pull request (pinned Ubuntu 24.04 runner), and uploads the HTML reports as artifacts. *Run workflow* in the Actions tab starts it by hand.
 

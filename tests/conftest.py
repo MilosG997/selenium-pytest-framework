@@ -18,16 +18,17 @@ def pytest_html_report_title(report):
     report.title = "Selenium + pytest framework: test report"
 
 
-_terminal = None
-
-
-def pytest_configure(config):
-    global _terminal
-    _terminal = config.pluginmanager.get_plugin("terminalreporter")
-
-
-def pytest_runtest_logreport(report):
-    """On GitHub Actions, show every failure as an annotation on the run page (no need to open the log)."""
-    if os.environ.get("GITHUB_ACTIONS") and _terminal and report.failed and report.when in ("setup", "call"):
-        message = str(report.longrepr).strip().splitlines()[-1][:300]
-        _terminal.write_line(f"::error title={report.nodeid}::{message}")
+def pytest_terminal_summary(terminalreporter, exitstatus):
+    """On GitHub Actions, show every failure and error (setup, test, teardown or collection) as an annotation on the
+    run page, so the reason is visible without opening the log."""
+    if not os.environ.get("GITHUB_ACTIONS"):
+        return
+    shown = 0
+    for kind in ("failed", "error"):
+        for report in terminalreporter.stats.get(kind, []):
+            lines = str(getattr(report, "longrepr", "") or kind).strip().splitlines()
+            where = f'{getattr(report, "when", "collect")}: {getattr(report, "nodeid", "") or "collection"}'
+            terminalreporter.write_line(f"::error title={kind} in {where}::{lines[-1][:300] if lines else kind}")
+            shown += 1
+    if exitstatus and not shown:
+        terminalreporter.write_line(f"::error title=pytest exit status {int(exitstatus)}::no test failed, see the log")

@@ -9,6 +9,8 @@ jobs:
   ui:
     name: UI (${{ matrix.browser }})
     runs-on: ubuntu-24.04
+    # Automation Exercise is full of ads that only Chrome can block (DevTools); in Firefox they cover buttons,
+    # so that shop runs in the Chrome job only. SauceDemo and The Internet run in both browsers.
     strategy:
       fail-fast: false
       matrix:
@@ -23,8 +25,9 @@ jobs:
       - name: Run UI tests in parallel
         run: >
           pytest tests/ui -n 4 --browser ${{ matrix.browser }} --reruns 2 --reruns-delay 5
+          ${{ matrix.browser == 'firefox' && '--ignore=tests/ui/automationexercise' || '' }}
           --html=reports/ui-${{ matrix.browser }}.html --self-contained-html
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: report-ui-${{ matrix.browser }}
@@ -41,7 +44,7 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - run: pytest tests/api --reruns 2 --reruns-delay 5 --html=reports/api.html --self-contained-html
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: report-api

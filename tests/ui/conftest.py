@@ -41,7 +41,10 @@ def driver(request):
         d.execute_cdp_cmd("Network.setBlockedURLs", {"urls": AD_HOSTS})
     d.set_page_load_timeout(45)
     yield d
-    d.quit()
+    try:
+        d.quit()
+    except Exception:  # the browser can already be gone (geckodriver closes on CI); the test result is what counts
+        pass
 
 
 @pytest.hookimpl(hookwrapper=True)

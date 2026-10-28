@@ -29,11 +29,17 @@ class Header(BasePage):
 
     def open_cart(self):
         self.click(self.CART_LINK)
-        return CartPage(self.driver)
+        cart = CartPage(self.driver)
+        cart.wait_for_url("/cart.html")
+        cart.find(cart.CHECKOUT)  # rendered: safe to read the items now
+        return cart
 
     def _menu(self, item):
+        """The sidebar slides in: wait until the item is shown, then click it with JS so the animation cannot
+        swallow the click (that happened in Firefox under parallel load)."""
         self.click(self.MENU)
-        self.click(item)
+        link = self.find(item)
+        self.driver.execute_script("arguments[0].click()", link)
 
     def logout(self):
         self._menu(self.LOGOUT)
@@ -41,6 +47,7 @@ class Header(BasePage):
 
     def reset_app_state(self):
         self._menu(self.RESET)
+        self.wait.until(lambda d: not self.find_all(self.CART_BADGE))
 
 
 class LoginPage(BasePage):
@@ -144,11 +151,16 @@ class CartPage(Header):
 
     def checkout(self):
         self.click(self.CHECKOUT)
-        return CheckoutInfoPage(self.driver)
+        info = CheckoutInfoPage(self.driver)
+        info.find(info.FIRST)
+        return info
 
     def continue_shopping(self):
         self.click(self.CONTINUE)
-        return InventoryPage(self.driver)
+        inventory = InventoryPage(self.driver)
+        inventory.wait_for_url("/inventory.html")
+        inventory.find(inventory.ITEM)
+        return inventory
 
 
 class CheckoutInfoPage(Header):
@@ -189,6 +201,7 @@ class CheckoutOverviewPage(Header):
         return float(label.split("$")[1])
 
     def item_prices(self):
+        self.find(self.SUBTOTAL)  # the overview has rendered once the summary is there
         return [float(e.text.lstrip("$")) for e in self.find_all(self.ITEM_PRICE)]
 
     def subtotal(self):
