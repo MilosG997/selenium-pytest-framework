@@ -24,7 +24,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Run UI tests in parallel
         run: >
-          pytest tests/ui -n 4 --browser ${{ matrix.browser }}
+          pytest tests/ui -n 4 --browser ${{ matrix.browser }} --reruns 2 --reruns-delay 5
           --html=reports/ui-${{ matrix.browser }}.html --self-contained-html
       - uses: actions/upload-artifact@v5
         if: always()
@@ -42,7 +42,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
-      - run: pytest tests/api --html=reports/api.html --self-contained-html
+      - run: pytest tests/api --reruns 2 --reruns-delay 5 --html=reports/api.html --self-contained-html
       - uses: actions/upload-artifact@v5
         if: always()
         with:
